@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Transaction Reconciliation & Ops Portal (Internal Tool)
 
-## Getting Started
+**The Problem:**
+Due to unpredictable edge cases with the external Omnify banking gateway, card load transactions were getting stuck in a `PENDING` state. The cron job retries would exhaust, and the Product Manager/Owner would manually compile an Excel sheet of failed transactions every other day. A backend developer then had to manually run SQL update scripts across two microservices (Card DB and Wallet DB) to mark them as `FAILED`.
 
-First, run the development server:
+**Solution:**
+Built a full-stack Operations Portal that allowed the Product Manager to safely upload the Excel sheet (or select from a UI) and automatically execute the database updates in a secure, audited background job.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Tech Stack
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Framework: Next.js (React + TypeScript)
+- Styling: TailwindCSS + Shadcn/UI (for fast, beautiful internal dashboards)
+- Database ORM: Drizzle (to talk to our mock MySQL DB)
+- Background Jobs: Trigger.dev (integrated directly into Next.js)
+- Validation: Zod (for validating the uploaded CSV data)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deployment Strategy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**The Context:**
 
-## Learn More
+The companies (like TruKKer/Moxey), teams are often allocated annual cloud budgets (Azure Monetary Commitment credits or Oracle Universal Credits).
+Internal tools are usually deployed on low-cost Virtual Machines (VMs) rather than expensive managed services like Vercel or Azure App Service, to save these credits for customer-facing production apps.
 
-To learn more about Next.js, take a look at the following resources:
+**The Deployment Architecture:**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Here I will simulate (Same as I implemented) deploying this entire stack onto a single low-cost Virtual Machine.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- A standard low-cost Linux VM (AWS).
+- Docker to run the Next.js production build and the MySQL container on that exact same VM.
