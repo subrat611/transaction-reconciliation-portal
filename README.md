@@ -30,3 +30,40 @@ Here I will simulate (Same as I implemented) deploying this entire stack onto a 
 
 - A standard low-cost Linux VM (AWS).
 - Docker to run the Next.js production build and the MySQL container on that exact same VM.
+
+## Running The App Locally
+
+**Local (Without Persistent Storage)**
+
+```sh
+docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=your_secure_password -p 3306:3306 -d mysql:latest
+```
+
+**Prod / local (With Persistent Storage)**
+
+```sh
+docker run --name mysql-container \
+  -e MYSQL_ROOT_PASSWORD=your_secure_password \
+  -v mysql_local_data:/var/lib/mysql \
+  -p 3306:3306 -d mysql:latest
+```
+
+- `--name mysql-container`: Sets a custom name for your container.
+- `-e MYSQL_ROOT_PASSWORD=...`: Configures the mandatory root password for your database.
+- `-p 3306:3306`: Forwards port 3306 from the container to your host machine.
+- `-d`: Runs the process in detached (background) mode
+- `mysql:latest`: Tells Docker to pull and use the latest official MySQL image.
+
+```sh
+# View running containers
+docker ps
+
+# Access MySQL CLI
+docker exec -it <container-name> mysql -uroot -p
+
+# Stop server
+docker stop <container-name>
+
+# Start server
+dockerr start <container-name>
+```
