@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Transaction, features } from "./columns";
+import { triggerReconciliation } from "@/app/actions/transactions";
+import { toast } from "sonner";
 
 interface DataTableProps {
   columns: ColumnDef<typeof features, Transaction, any>[];
@@ -34,17 +36,35 @@ export function DataTable({ columns, data }: DataTableProps) {
 
   const selectedCount = Object.keys(rowSelection).length;
 
+  const handleFailSelected = async () => {
+    const selectedRows = table.getSelectedRowModel().rows;
+    const reqNumbers = selectedRows.map((row) => row.original.reqNumber);
+
+    if (reqNumbers.length === 0) return;
+
+    const result = await triggerReconciliation(reqNumbers);
+
+    if (result.success) {
+      toast(`Job triggered successfully! Job ID: ${result.jobId}`);
+      setRowSelection({});
+    } else {
+      alert(`Failed to trigger job: ${result.error}`);
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
         <div className="text-sm text-muted-foreground">
           {selectedCount} of {table.getRowModel().rows.length} row(s) selected.
         </div>
-        <Button variant="destructive" disabled={selectedCount === 0}>
-          Fail Selected ({selectedCount})
-        </Button>
+        {selectedCount > 0 && (
+          <Button variant="destructive" size="sm" onClick={handleFailSelected}>
+            Fail Selected ({selectedCount})
+          </Button>
+        )}
       </div>
-      <div className="rounded-md border h-[calc(100vh-280px)] overflow-auto relative">
+      <div className="rounded-md border min-h-fit max-h-[calc(100vh-280px)] overflow-auto relative">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
